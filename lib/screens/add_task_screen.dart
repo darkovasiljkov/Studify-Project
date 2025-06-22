@@ -20,59 +20,122 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Task')),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Title'),
-                onSaved: (value) => _title = value ?? '',
-                validator: (value) => value == null || value.isEmpty ? 'Please enter title' : null,
+      appBar: AppBar(
+        title: Text('Add Task'),
+        backgroundColor: Colors.indigo,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            // Logo / Title
+            Text(
+              'Studify',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+                letterSpacing: 2,
               ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Description'),
-                onSaved: (value) => _description = value ?? '',
-                validator: (value) => value == null || value.isEmpty ? 'Please enter description' : null,
+            ),
+            SizedBox(height: 30),
+
+            // Form Card
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              TextFormField(
-                decoration: InputDecoration(labelText: 'Due Date (YYYY-MM-DD)'),
-                onSaved: (value) => _dueDate = value ?? '',
-                validator: (value) {
-                  if (value == null || value.isEmpty) return 'Please enter due date';
-                  final regex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
-                  if (!regex.hasMatch(value)) return 'Enter date as YYYY-MM-DD';
-                  return null;
-                },
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Title',
+                          prefixIcon: Icon(Icons.title),
+                        ),
+                        onSaved: (value) => _title = value ?? '',
+                        validator: (value) =>
+                        value == null || value.isEmpty ? 'Please enter title' : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          prefixIcon: Icon(Icons.description),
+                        ),
+                        onSaved: (value) => _description = value ?? '',
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please enter description'
+                            : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'Due Date (YYYY-MM-DD)',
+                          prefixIcon: Icon(Icons.date_range),
+                        ),
+                        onSaved: (value) => _dueDate = value ?? '',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter due date';
+                          }
+                          final regex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+                          if (!regex.hasMatch(value)) {
+                            return 'Enter date as YYYY-MM-DD';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        decoration: InputDecoration(
+                          labelText: 'Priority',
+                          prefixIcon: Icon(Icons.flag),
+                        ),
+                        value: _priority,
+                        onChanged: (value) => setState(() => _priority = value ?? 'Low'),
+                        items: priorities
+                            .map((p) => DropdownMenuItem(
+                          value: p,
+                          child: Text(p),
+                        ))
+                            .toList(),
+                      ),
+                      SizedBox(height: 30),
+                      ElevatedButton.icon(
+                        icon: Icon(Icons.save),
+                        label: Text('Save Task'),
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            await firestoreService.addTask(
+                              title: _title,
+                              description: _description,
+                              dueDate: _dueDate,
+                              priority: _priority,
+                            );
+                            Navigator.pop(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.indigo,
+                          minimumSize: Size(double.infinity, 48),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          textStyle: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Priority'),
-                value: _priority,
-                onChanged: (value) => setState(() => _priority = value ?? 'Low'),
-                items: priorities
-                    .map((p) => DropdownMenuItem(value: p, child: Text(p)))
-                    .toList(),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                child: Text('Save Task'),
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    await firestoreService.addTask(
-                      title: _title,
-                      description: _description,
-                      dueDate: _dueDate,
-                      priority: _priority,
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
