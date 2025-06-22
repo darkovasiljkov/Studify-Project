@@ -12,6 +12,7 @@ class _LocationScreenState extends State<LocationScreen> {
   LatLng? _selectedLatLng;
   final TextEditingController _nameController = TextEditingController();
   final FirestoreService _firestoreService = FirestoreService();
+  final MapController _mapController = MapController(); // 👈 Added map controller
 
   final LatLng _initialCenter = LatLng(41.9981, 21.4254);
   final double _initialZoom = 14.0;
@@ -31,7 +32,10 @@ class _LocationScreenState extends State<LocationScreen> {
       return;
     }
 
-    await _firestoreService.addLocation(_selectedLatLng!, _nameController.text.trim());
+    await _firestoreService.addLocation(
+      _selectedLatLng!,
+      _nameController.text.trim(),
+    );
 
     setState(() {
       _selectedLatLng = null;
@@ -63,6 +67,7 @@ class _LocationScreenState extends State<LocationScreen> {
           Expanded(
             flex: 3,
             child: FlutterMap(
+              mapController: _mapController, // 👈 Added controller
               options: MapOptions(
                 center: _initialCenter,
                 zoom: _initialZoom,
@@ -74,7 +79,8 @@ class _LocationScreenState extends State<LocationScreen> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate:
+                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                   subdomains: ['a', 'b', 'c'],
                   userAgentPackageName: 'com.studify.app',
                 ),
@@ -85,7 +91,11 @@ class _LocationScreenState extends State<LocationScreen> {
                         width: 40,
                         height: 40,
                         point: _selectedLatLng!,
-                        builder: (_) => Icon(Icons.location_on, color: Colors.red, size: 40),
+                        builder: (_) => Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 40,
+                        ),
                       ),
                     ],
                   ),
@@ -103,7 +113,8 @@ class _LocationScreenState extends State<LocationScreen> {
                   decoration: InputDecoration(
                     labelText: 'Location Name or Note',
                     prefixIcon: Icon(Icons.edit_note),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 SizedBox(height: 10),
@@ -151,21 +162,31 @@ class _LocationScreenState extends State<LocationScreen> {
                     final String name = loc['name'];
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 6),
                       child: Card(
                         elevation: 2,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         child: ListTile(
                           leading: Icon(Icons.place, color: Colors.indigo),
                           title: Text(name),
-                          subtitle: Text('Lat: ${latLng.latitude.toStringAsFixed(4)}, '
-                              'Lng: ${latLng.longitude.toStringAsFixed(4)}'),
+                          subtitle: Text(
+                            'Lat: ${latLng.latitude.toStringAsFixed(4)}, '
+                                'Lng: ${latLng.longitude.toStringAsFixed(4)}',
+                          ),
                           trailing: IconButton(
                             icon: Icon(Icons.delete, color: Colors.red),
                             onPressed: () async {
                               await _firestoreService.deleteLocation(loc['id']);
                             },
                           ),
+                          onTap: () {
+                            setState(() {
+                              _selectedLatLng = latLng;
+                              _mapController.move(latLng, _initialZoom); // 👈 Center map
+                            });
+                          },
                         ),
                       ),
                     );
