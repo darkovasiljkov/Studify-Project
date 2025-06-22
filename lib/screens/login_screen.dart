@@ -61,7 +61,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ? CircularProgressIndicator()
                 : ElevatedButton(
               onPressed: login,
-              child: Text('Login'),
+              child: Text(
+                'Login',
+                style: TextStyle(color: Colors.white), // 👈 change text color here
+              ),
               style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
             ),
             TextButton(

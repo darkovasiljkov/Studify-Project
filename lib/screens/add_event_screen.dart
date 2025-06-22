@@ -12,7 +12,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
   final TextEditingController _titleController = TextEditingController();
   DateTime? _selectedDate;
   TimeOfDay? _selectedTime;
-
   final FirestoreService _firestoreService = FirestoreService();
 
   Future<void> _pickDate() async {
@@ -54,7 +53,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
       );
       Navigator.pop(context);
     } catch (e) {
-      print('Failed to add event: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to add event')),
       );
@@ -64,36 +62,78 @@ class _AddEventScreenState extends State<AddEventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Event')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: Text('Add Event'),
+        backgroundColor: Colors.indigo,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(labelText: 'Event Title'),
+            // Logo-style title
+            Text(
+              'Studify',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.indigo,
+                letterSpacing: 2,
+              ),
             ),
-            SizedBox(height: 16),
-            ListTile(
-              title: Text(_selectedDate == null
-                  ? 'Select Date'
-                  : _selectedDate!.toLocal().toString().split(' ')[0]),
-              trailing: Icon(Icons.calendar_today),
-              onTap: _pickDate,
+            SizedBox(height: 30),
+
+            // Form card
+            Card(
+              elevation: 5,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Event Title',
+                        prefixIcon: Icon(Icons.event),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    ListTile(
+                      title: Text(
+                        _selectedDate == null
+                            ? 'Select Date'
+                            : _selectedDate!.toLocal().toString().split(' ')[0],
+                      ),
+                      leading: Icon(Icons.calendar_today),
+                      onTap: _pickDate,
+                    ),
+                    ListTile(
+                      title: Text(
+                        _selectedTime == null
+                            ? 'Select Time'
+                            : _selectedTime!.format(context),
+                      ),
+                      leading: Icon(Icons.access_time),
+                      onTap: _pickTime,
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      icon: Icon(Icons.save),
+                      label: Text('Save Event'),
+                      onPressed: _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                        minimumSize: Size(double.infinity, 48),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
             ),
-            ListTile(
-              title: Text(_selectedTime == null
-                  ? 'Select Time'
-                  : _selectedTime!.format(context)),
-              trailing: Icon(Icons.access_time),
-              onTap: _pickTime,
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _submit,
-              child: Text('Save Event'),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.indigo),
-            )
           ],
         ),
       ),

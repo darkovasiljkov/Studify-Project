@@ -21,7 +21,10 @@ class TaskListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tasks')),
+      appBar: AppBar(
+        title: const Text('Tasks'),
+        backgroundColor: Colors.indigo,
+      ),
       body: StreamBuilder<QuerySnapshot>(
         stream: firestoreService.getTasks(),
         builder: (context, snapshot) {
@@ -39,27 +42,50 @@ class TaskListScreen extends StatelessWidget {
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final doc = docs[index];
               final task = _taskFromDoc(doc);
-              return ListTile(
-                title: Text(task.title),
-                subtitle: Text(task.description),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    '/task-details',
-                    arguments: task,
-                  );
-                },
+
+              return Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.indigo.shade100,
+                    child: Icon(Icons.task, color: Colors.indigo, size: 28),
+                  ),
+                  title: Text(
+                    task.title,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      task.description,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                    ),
+                  ),
+                  trailing: Icon(Icons.arrow_forward_ios_rounded, size: 20),
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/task-details',
+                      arguments: task,
+                    );
+                  },
+                ),
               );
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.indigo,
         child: const Icon(Icons.add),
         tooltip: 'Add Task',
         onPressed: () {
