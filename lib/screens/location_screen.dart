@@ -19,13 +19,14 @@ class _LocationScreenState extends State<LocationScreen> {
   void _saveLocation() async {
     if (_selectedLatLng == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please select a location first!')),
+        SnackBar(content: Text('Please select a location on the map.')),
       );
       return;
     }
+
     if (_nameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a name or note for the location!')),
+        SnackBar(content: Text('Please enter a name or note.')),
       );
       return;
     }
@@ -38,7 +39,7 @@ class _LocationScreenState extends State<LocationScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Location saved to Firestore!')),
+      SnackBar(content: Text('Location saved successfully.')),
     );
   }
 
@@ -51,16 +52,21 @@ class _LocationScreenState extends State<LocationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Locations')),
+      appBar: AppBar(
+        title: Text('Saved Locations'),
+        backgroundColor: Colors.indigo,
+        centerTitle: true,
+      ),
       body: Column(
         children: [
+          // Map
           Expanded(
             flex: 3,
             child: FlutterMap(
               options: MapOptions(
                 center: _initialCenter,
                 zoom: _initialZoom,
-                onTap: (tapPosition, point) {
+                onTap: (_, point) {
                   setState(() {
                     _selectedLatLng = point;
                   });
@@ -70,43 +76,60 @@ class _LocationScreenState extends State<LocationScreen> {
                 TileLayer(
                   urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                   subdomains: ['a', 'b', 'c'],
-                  userAgentPackageName: 'com.example.app',
+                  userAgentPackageName: 'com.studify.app',
                 ),
                 if (_selectedLatLng != null)
                   MarkerLayer(
                     markers: [
                       Marker(
-                        point: _selectedLatLng!,
                         width: 40,
                         height: 40,
-                        builder: (ctx) => Icon(
-                          Icons.location_pin,
-                          color: Colors.red,
-                          size: 40,
-                        ),
+                        point: _selectedLatLng!,
+                        builder: (_) => Icon(Icons.location_on, color: Colors.red, size: 40),
                       ),
                     ],
                   ),
               ],
             ),
           ),
+
+          // Input & Save
           Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Location Name or Note',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.note),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Location Name or Note',
+                    prefixIcon: Icon(Icons.edit_note),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _saveLocation,
+                    icon: Icon(Icons.save),
+                    label: Text('Save Location'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          ElevatedButton.icon(
-            icon: Icon(Icons.save),
-            label: Text('Save Location'),
-            onPressed: _saveLocation,
-          ),
-          Divider(height: 1),
+
+          Divider(),
+
+          // Saved locations list
           Expanded(
             flex: 2,
             child: StreamBuilder<List<Map<String, dynamic>>>(
@@ -116,8 +139,9 @@ class _LocationScreenState extends State<LocationScreen> {
                   return Center(child: CircularProgressIndicator());
                 }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(child: Text('No saved locations yet'));
+                  return Center(child: Text('No saved locations yet.'));
                 }
+
                 final locations = snapshot.data!;
                 return ListView.builder(
                   itemCount: locations.length,
@@ -125,15 +149,24 @@ class _LocationScreenState extends State<LocationScreen> {
                     final loc = locations[index];
                     final LatLng latLng = loc['latLng'];
                     final String name = loc['name'];
-                    return ListTile(
-                      leading: Icon(Icons.location_on),
-                      title: Text(name),
-                      subtitle: Text('Lat: ${latLng.latitude.toStringAsFixed(4)}, Lng: ${latLng.longitude.toStringAsFixed(4)}'),
-                      trailing: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () async {
-                          await _firestoreService.deleteLocation(loc['id']);
-                        },
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      child: Card(
+                        elevation: 2,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          leading: Icon(Icons.place, color: Colors.indigo),
+                          title: Text(name),
+                          subtitle: Text('Lat: ${latLng.latitude.toStringAsFixed(4)}, '
+                              'Lng: ${latLng.longitude.toStringAsFixed(4)}'),
+                          trailing: IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              await _firestoreService.deleteLocation(loc['id']);
+                            },
+                          ),
+                        ),
                       ),
                     );
                   },
