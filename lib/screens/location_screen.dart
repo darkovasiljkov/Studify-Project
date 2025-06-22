@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../utils/constants.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class LocationScreen extends StatefulWidget {
   @override
@@ -7,72 +8,71 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  Offset? _selectedPosition;
+  LatLng? _selectedLatLng;
+
+  // Initial map center point
+  final LatLng _initialCenter = LatLng(41.9981, 21.4254);
+  final double _initialZoom = 14.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Location', style: AppConstants.headingStyle),
-        backgroundColor: AppConstants.primaryColor,
+        title: Text('Location'),
       ),
       body: Column(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTapDown: (TapDownDetails details) {
-                setState(() {
-                  _selectedPosition = details.localPosition;
-                });
-              },
-              child: Stack(
-                children: [
-                  Image.network(
-                    'https://maps.googleapis.com/maps/api/staticmap?center=41.9981,21.4254&zoom=14&size=600x400&key=YOUR_GOOGLE_MAPS_API_KEY',
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                  ),
-                  if (_selectedPosition != null)
-                    Positioned(
-                      left: _selectedPosition!.dx - 12,
-                      top: _selectedPosition!.dy - 24,
-                      child: Icon(
-                        Icons.location_pin,
-                        color: AppConstants.primaryColor,
-                        size: 40,
-                      ),
-                    ),
-                ],
+            child: FlutterMap(
+              options: MapOptions(
+                center: _initialCenter,
+                zoom: _initialZoom,
+                onTap: (tapPosition, point) {
+                  setState(() {
+                    _selectedLatLng = point;
+                  });
+                },
               ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: ['a', 'b', 'c'],
+                  userAgentPackageName: 'com.example.app',
+                ),
+                if (_selectedLatLng != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _selectedLatLng!,
+                        width: 40,
+                        height: 40,
+                        builder: (ctx) => Icon(
+                          Icons.location_pin,
+                          color: Colors.red,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            padding: const EdgeInsets.all(16),
             child: ElevatedButton.icon(
+              icon: Icon(Icons.save),
+              label: Text('Save Location'),
               onPressed: () {
-                if (_selectedPosition == null) {
+                if (_selectedLatLng == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Please select a location first!')),
                   );
                 } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          'Location saved at pixel position: (${_selectedPosition!.dx}, ${_selectedPosition!.dy})'),
-                    ),
-                  );
-                  Navigator.pop(context);
+                  // Return the selected LatLng to previous screen
+                  Navigator.pop(context, _selectedLatLng);
                 }
               },
-              icon: Icon(Icons.save),
-              label: Text('Save Location'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppConstants.primaryColor,
-                padding: EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
             ),
           ),
         ],

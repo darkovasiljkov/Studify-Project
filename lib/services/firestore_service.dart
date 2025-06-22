@@ -11,16 +11,15 @@ class FirestoreService {
   Future<void> addEvent({
     required String title,
     required DateTime date,
-    required TimeOfDay time,
+    required String time,  // <-- change TimeOfDay to String here
   }) async {
     await eventsCollection.add({
       'title': title,
       'date': Timestamp.fromDate(date),
-      'time': '${time.hour}:${time.minute.toString().padLeft(2, '0')}',
+      'time': time,
       'created_at': FieldValue.serverTimestamp(),
     });
   }
-
   Stream<QuerySnapshot> getEvents() {
     return eventsCollection.orderBy('date').snapshots();
   }

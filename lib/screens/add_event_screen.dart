@@ -46,12 +46,13 @@ class _AddEventScreenState extends State<AddEventScreen> {
     }
 
     try {
+      final timeString = _selectedTime!.format(context);
       await _firestoreService.addEvent(
         title: _titleController.text,
         date: _selectedDate!,
-        time: _selectedTime!,
+        time: timeString,
       );
-      Navigator.pop(context); // back to previous screen
+      Navigator.pop(context);
     } catch (e) {
       print('Failed to add event: $e');
       ScaffoldMessenger.of(context).showSnackBar(
