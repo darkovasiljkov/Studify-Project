@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import 'package:latlong2/latlong.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -81,8 +82,23 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildFeatureCard(BuildContext context, Map<String, dynamic> feature) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, feature['route']);
+      onTap: () async {
+        if (feature['route'] == AppConstants.locationRoute) {
+          // Navigate and wait for result from LocationScreen
+          final result = await Navigator.pushNamed(context, feature['route']);
+          if (result != null && result is Map<String, dynamic>) {
+            final LatLng location = result['location'];
+            final String name = result['name'];
+            // Show confirmation or save the location info
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Saved location: "$name" at (${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)})'),
+              ),
+            );
+          }
+        } else {
+          Navigator.pushNamed(context, feature['route']);
+        }
       },
       child: Card(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -114,7 +130,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildBottomNavBar(BuildContext context) {
     return BottomNavigationBar(
       backgroundColor: Colors.blue.shade300,
