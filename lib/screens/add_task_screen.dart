@@ -15,57 +15,58 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String _dueDate = '';
   String _priority = 'Low';
 
+  final List<String> priorities = ['Low', 'Medium', 'High'];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Task')),
+      appBar: AppBar(title: Text('Add Task')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Title'),
-                validator: (val) =>
-                val == null || val.isEmpty ? 'Please enter title' : null,
-                onSaved: (val) => _title = val ?? '',
+                decoration: InputDecoration(labelText: 'Title'),
+                onSaved: (value) => _title = value ?? '',
+                validator: (value) => value == null || value.isEmpty ? 'Please enter title' : null,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Description'),
-                validator: (val) => val == null || val.isEmpty
-                    ? 'Please enter description'
-                    : null,
-                onSaved: (val) => _description = val ?? '',
+                decoration: InputDecoration(labelText: 'Description'),
+                onSaved: (value) => _description = value ?? '',
+                validator: (value) => value == null || value.isEmpty ? 'Please enter description' : null,
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: 'Due Date (YYYY-MM-DD)'),
-                validator: (val) =>
-                val == null || val.isEmpty ? 'Please enter due date' : null,
-                onSaved: (val) => _dueDate = val ?? '',
+                decoration: InputDecoration(labelText: 'Due Date (YYYY-MM-DD)'),
+                onSaved: (value) => _dueDate = value ?? '',
+                validator: (value) {
+                  if (value == null || value.isEmpty) return 'Please enter due date';
+                  final regex = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+                  if (!regex.hasMatch(value)) return 'Enter date as YYYY-MM-DD';
+                  return null;
+                },
               ),
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(labelText: 'Priority'),
+                decoration: InputDecoration(labelText: 'Priority'),
                 value: _priority,
-                items: ['Low', 'Medium', 'High']
+                onChanged: (value) => setState(() => _priority = value ?? 'Low'),
+                items: priorities
                     .map((p) => DropdownMenuItem(value: p, child: Text(p)))
                     .toList(),
-                onChanged: (val) => setState(() => _priority = val ?? 'Low'),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ElevatedButton(
-                child: const Text('Save Task'),
+                child: Text('Save Task'),
                 onPressed: () async {
-                  if (_formKey.currentState?.validate() ?? false) {
-                    _formKey.currentState?.save();
-
+                  if (_formKey.currentState!.validate()) {
+                    _formKey.currentState!.save();
                     await firestoreService.addTask(
                       title: _title,
                       description: _description,
                       dueDate: _dueDate,
                       priority: _priority,
                     );
-
                     Navigator.pop(context);
                   }
                 },

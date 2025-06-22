@@ -134,7 +134,7 @@ class HomeScreen extends StatelessWidget {
 
   final List<Map<String, dynamic>> featureList = [
     {'title': 'Calendar', 'icon': Icons.calendar_today, 'route': AppConstants.calendarRoute},
-    {'title': 'Tasks', 'icon': Icons.task, 'route': AppConstants.taskListRoute}, // Use Task List route here
+    {'title': 'Tasks', 'icon': Icons.task, 'route': AppConstants.taskListRoute},  // <-- Use taskListRoute here
     {'title': 'Add Event', 'icon': Icons.add, 'route': AppConstants.addEventRoute},
     {'title': 'Locations', 'icon': Icons.location_on, 'route': AppConstants.locationRoute},
     {'title': 'Profile', 'icon': Icons.person, 'route': AppConstants.profileRoute},

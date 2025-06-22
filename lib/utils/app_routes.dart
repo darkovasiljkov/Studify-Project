@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:studify_project/screens/task_list_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/calendar_screen.dart';
@@ -19,6 +20,7 @@ class AppRoutes {
     '/home': (context) => HomeScreen(),
     '/calendar': (context) => CalendarScreen(),
     '/add-task': (context) => AddTaskScreen(),
+    '/task-list': (context) => TaskListScreen(),
     '/add-event': (context) => AddEventScreen(),
     '/location': (context) => LocationScreen(),
     '/profile': (context) => ProfileScreen(),
@@ -36,16 +38,15 @@ class AppRoutes {
           );
         }
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            body: Center(child: Text('Task data is missing or invalid!')),
-          ),
+          builder: (_) =>
+              Scaffold(body: Center(
+              child: Text('Task data is missing or invalid!'))),
         );
-
+    // Add event details similarly if needed
       default:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('No route defined')),
-          ),
+          builder: (_) =>
+          const Scaffold(body: Center(child: Text('No route defined'))),
         );
     }
   }
