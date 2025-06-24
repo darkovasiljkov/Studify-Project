@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../main.dart';
 import '../utils/constants.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:camera/camera.dart';
+
+import 'camera_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -25,6 +29,47 @@ class HomeScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildWelcomeBanner(),
+
+          // Camera Button
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: ElevatedButton.icon(
+              icon: Icon(Icons.camera_alt),
+              label: Text('Open Camera'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppConstants.primaryColor,
+                minimumSize: Size(double.infinity, 50),
+                textStyle: AppConstants.buttonTextStyle,
+              ),
+              onPressed: () async {
+                try {
+                  if (cameras.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('No cameras found')),
+                    );
+                    return;
+                  }
+                  final firstCamera = cameras.first;
+                  final imagePath = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CameraScreen(camera: firstCamera),
+                    ),
+                  );
+                  if (imagePath != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Picture saved at: $imagePath')),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error opening camera: $e')),
+                  );
+                }
+              },
+            ),
+          ),
+
           Expanded(child: _buildFeaturesGrid(context)),
         ],
       ),
@@ -84,12 +129,10 @@ class HomeScreen extends StatelessWidget {
     return GestureDetector(
       onTap: () async {
         if (feature['route'] == AppConstants.locationRoute) {
-          // Navigate and wait for result from LocationScreen
           final result = await Navigator.pushNamed(context, feature['route']);
           if (result != null && result is Map<String, dynamic>) {
             final LatLng location = result['location'];
             final String name = result['name'];
-            // Show confirmation or save the location info
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Saved location: "$name" at (${location.latitude.toStringAsFixed(4)}, ${location.longitude.toStringAsFixed(4)})'),
@@ -130,6 +173,7 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildBottomNavBar(BuildContext context) {
     return BottomNavigationBar(
       backgroundColor: Colors.blue.shade300,
@@ -149,7 +193,7 @@ class HomeScreen extends StatelessWidget {
 
   final List<Map<String, dynamic>> featureList = [
     {'title': 'Calendar', 'icon': Icons.calendar_today, 'route': AppConstants.calendarRoute},
-    {'title': 'Tasks', 'icon': Icons.task, 'route': AppConstants.taskListRoute},  // <-- Use taskListRoute here
+    {'title': 'Tasks', 'icon': Icons.task, 'route': AppConstants.taskListRoute},
     {'title': 'Add Event', 'icon': Icons.add, 'route': AppConstants.addEventRoute},
     {'title': 'Locations', 'icon': Icons.location_on, 'route': AppConstants.locationRoute},
     {'title': 'Profile', 'icon': Icons.person, 'route': AppConstants.profileRoute},

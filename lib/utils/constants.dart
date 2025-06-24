@@ -42,4 +42,5 @@ class AppConstants {
   static const String profileRoute = "/profile";
   static const String settingsRoute = "/settings";
   static const String taskListRoute = "/task-list";
+  static const String cameraRoute = '/camera';
 }
